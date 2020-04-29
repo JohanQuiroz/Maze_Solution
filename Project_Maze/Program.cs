@@ -51,10 +51,27 @@ namespace Project_Maze
             }
         }
 
-        static void road(char[,] maze, int x, int y, int xEnd, int yEnd, int[] numberSteps, int numberRoads)
+        static void road(char[,] maze, int x, int y, int xEnd, int yEnd, List<Step> roadTemp, List<Road> roads)
         {
-            if (x == xEnd && y == yEnd)
+            
+            if (x == xEnd && y == yEnd)            
             {
+                Step r = new Step();
+                r.PositionX = x;
+                r.PositionY = y;
+                roadTemp.Add(r);
+                Road nuevo = new Road();
+                List<Step> nuevaLista = new List<Step>();
+                foreach (Step s in roadTemp)
+                {
+                    Step stp = s;
+                    nuevaLista.Add(stp);
+                }
+                nuevo.Steps = nuevaLista;
+                roads.Add(nuevo);
+                
+                roadTemp.Remove(r);
+                
                 Console.WriteLine("llego al fin");
                 printMaze(maze);
             }
@@ -62,13 +79,18 @@ namespace Project_Maze
             {
                 for (int i = 0; i < 4; i++)
                 {
+                    Step r = new Step();
                     switch (i)
                     {
                         case 0:
                             if (isSafe(maze, x, y + 1))
                             {
                                 maze[x, y + 1] = '1';
-                                road(maze, x, y + 1, xEnd, yEnd, numberSteps, numberRoads);
+                                r.PositionX = x;
+                                r.PositionY = y + 1;
+                                roadTemp.Add(r);
+                                road(maze, x, y + 1, xEnd, yEnd, roadTemp, roads);
+                                roadTemp.Remove(r);
                                 maze[x, y + 1] = '0';
                             }
                             break;
@@ -76,24 +98,36 @@ namespace Project_Maze
                             if (isSafe(maze, x + 1, y))
                             {
                                 maze[x + 1, y] = '1';
-                                road(maze, x + 1, y, xEnd, yEnd, numberSteps, numberRoads);
+                                r.PositionX = x + 1;
+                                r.PositionY = y;
+                                roadTemp.Add(r);
+                                road(maze, x + 1, y, xEnd, yEnd, roadTemp, roads);
+                                roadTemp.Remove(r);
                                 maze[x + 1, y] = '0';
                             }
                             break;
 
                         case 2:
                             if (isSafe(maze, x, y - 1))
-                            {
+                            {                                
                                 maze[x, y - 1] = '1';
-                                road(maze, x, y - 1, xEnd, yEnd, numberSteps, numberRoads);
+                                r.PositionX = x;
+                                r.PositionY = y - 1;
+                                roadTemp.Add(r);
+                                road(maze, x, y - 1, xEnd, yEnd, roadTemp, roads);
+                                roadTemp.Remove(r);
                                 maze[x, y - 1] = '0';
                             }
                             break;
                         case 3:
                             if (isSafe(maze, x - 1, y))
                             {
+                                r.PositionX = x - 1;
+                                r.PositionY = y;
+                                roadTemp.Add(r);
                                 maze[x - 1, y] = '1';
-                                road(maze, x - 1, y, xEnd, yEnd, numberSteps, numberRoads);
+                                road(maze, x - 1, y, xEnd, yEnd, roadTemp, roads);
+                                roadTemp.Remove(r);
                                 maze[x - 1, y] = '0';
                             }
                             break;
@@ -107,7 +141,9 @@ namespace Project_Maze
         static void Main(string[] args)
         {
             int[] numberSteps = new int[4] { 0, 0, 0, 0 };
-            int numberRoads = 0;
+            int solutionNumberSteps = 0, c = 0;
+            List<Road> roads = new List<Road>();
+            List<Step> roadTemp = new List<Step>();
             char[,] maze = new char[32, 32]
             {
                 {'╔','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╗'},
@@ -147,9 +183,22 @@ namespace Project_Maze
 
             maze[1, 1] = '1';
 
-            road(maze, 1, 1, 30, 30, numberSteps, numberRoads);
+            road(maze, 1, 1, 30, 30, roadTemp, roads);
 
+            foreach(Road r in roads)
+            {
+                if (c == 0)
+                    solutionNumberSteps = r.Steps.Count();
+                else
+                {
+                    if (r.Steps.Count() < solutionNumberSteps)
+                        solutionNumberSteps = r.Steps.Count();
+                }
+                c++;
+                Console.WriteLine("Cantidad : " + r.Steps.Count());
+            }
             Console.WriteLine();
+            Console.WriteLine("El mas optimo es : " + solutionNumberSteps);
             Console.ReadKey();
 
         }
