@@ -85,19 +85,14 @@ namespace Project_Maze
             if (x == xEnd && y == yEnd)            
             {
                 // Si estamos en el final del camino, se crea un nuevo Camino, y se crea un nuevo paso
-                Road newRoad = new Road();
-                Step newStep = new Step{ PositionX = x, PositionY = y };
-                // Se agrega el nuevo paso a la lista de pasos pertenecientes a este camino.
-                steps.Add(newStep);
+                Road newRoad = new Road();                
                 /* Se agrega la lista de pasos al nuevo camino encontrado, se castea de List<> a IEnumerable<> para que se creen nuevas referencias 
                    en la lista de objetos y no exista problemas.*/
                 newRoad.Steps = (steps as IEnumerable<Step>).ToList();     
                 // Se agrega el nuevo camino a la lista de caminos que puede recorrer el auto para llegar a la meta.
                 roads.Add(newRoad);
                 // Se imprime el siguiente texto en consola.
-                printText(" FINALIZÓ EL CAMINO CON " + steps.Count() + " PASOS");                
-                // Se elimina el ultimo paso para seguir buscando más en otras direcciones.
-                steps.Remove(newStep);
+                printText(" FINALIZÓ EL CAMINO CON " + steps.Count() + " PASOS");                                
                 // Se Imprime el laberinto con el nuevo camino encontrado.
                 printMaze(maze);
             }
@@ -132,7 +127,7 @@ namespace Project_Maze
                         //Se marca como visitado '1'.
                         maze[posX, posY] = '1';
                         // Se crea un nuevo paso y se añade a la lista de pasos
-                        Step s = new Step { PositionX = posX, PositionY = posY + 1 };
+                        Step s = new Step { PositionX = posX, PositionY = posY};
                         steps.Add(s);
                         // Se busca recursivamente ahora con la posicion del auto en alguna de las sgtes direcciones( →, ↓, ←, ↑).
                         findRoad(maze, posX, posY, xEnd, yEnd, steps, roads);
@@ -155,11 +150,12 @@ namespace Project_Maze
             //Se inicializa la matriz del laberinto, en donde '0' representará los pasos libres que se pueden elegir para que el auto pueda llegar a la meta.
             //El caracter '█' representa una pared o un bloque donde el auto no puede transitar.
             //Se tendrá en cuenta el caracter '1' para marcar que esa posicion es parte del camino de la solucion y el auto puede transitar.
+            //El auto inicia en el lugar (1,1)
 
             char[,] maze = new char[32, 32]
             {
                 {'╔','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╗'},
-                {'║','0','0','0','█','█','█','0','0','0','0','0','0','0','0','0','0','0','0','█','█','█','█','█','█','█','█','█','0','0','0','║'},
+                {'║','1','0','0','█','█','█','0','0','0','0','0','0','0','0','0','0','0','0','█','█','█','█','█','█','█','█','█','0','0','0','║'},
                 {'║','█','█','0','0','0','0','0','█','█','█','█','█','█','█','█','█','█','0','0','0','0','0','0','0','0','0','█','0','█','0','║' },
                 {'║','█','█','0','█','█','█','█','█','█','█','█','█','█','█','█','█','█','0','█','█','█','█','█','█','█','0','█','0','█','0','║' },
                 {'║','█','█','0','█','0','0','0','█','0','0','0','█','█','0','0','0','0','0','0','0','0','0','0','█','█','0','█','0','0','0','║' },
@@ -191,11 +187,9 @@ namespace Project_Maze
                 {'║','█','█','█','█','█','█','█','█','█','█','█','█','0','0','0','0','0','█','█','█','█','█','0','0','0','0','0','0','0','0','║' },
                 {'╚','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╝' }
             };
-
-            //La solución de los posibles caminos empieza inicializando la posicion (1,1) como visitada con el caracter '1' ya que el auto inicia en aquel lugar.
-            maze[1, 1] = '1';
-
-            //Se llama a la función findRoad (Buscar camino) la cual nos permitirá encontrar los caminos que el auto puede tomar para llegar a la meta.            
+            
+            //Se llama a la función findRoad (Buscar camino) la cual nos permitirá encontrar los caminos que el auto puede tomar para llegar a la meta.  
+            //Se pasa la posicion (1,1) la cual es el inicio del auto y la (30,30) que es la meta.
             findRoad(maze, 1, 1, 30, 30, steps, roads);
 
             //Ahora ya tenemos los caminos de las posibles soluciones que puede tomar el auto para llegar a la meta. Se eligirá el más optimo, el de menor pasos.                        
