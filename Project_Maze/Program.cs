@@ -8,130 +8,138 @@ namespace Project_Maze
 {
     class Program
     {
+        // Esta función permite imprimir los bordes del laberinto en consola de color amarillo.
         static void paintBorder(char c)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(c);
         }
 
+        // Esta función permite imprimir los bloques o paredes del laberinto en consola de color plomo.
         static void paintWall(char c)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write(c);
         }
 
+        // Esta función permite imprimir el camino de solucion del laberinto en consola de color rojo.
         static void paintRoad(char c)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write(c);
         }
 
+        // Esta función permite imprimir el texto en consola de color verde.
+        static void printText(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(text);
+        }
+
+        // Esta función nos permite verificar si la coordenada donde se encontrará el auto es segura.
         static bool isSafe(char[,] maze, int x, int y)
         {
+            //Verifica que esté entre las coordenadas del laberinto y en una posicion libre '0'.
             if (x >= 1 && y >= 1 && x <= 30 && y <= 30 && maze[x, y] == '0')
                 return true;
             return false;
         }
 
+        // Esta función imprime el laberinto
         static void printMaze(char[,] maze)
         {
+            char carac = ' ';
             for (int i = 0; i < 32; i++)
             {
                 for (int j = 0; j < 32; j++)
                 {
-                    //Console.SetCursorPosition(20 + j, 1 + i);
-                    if (maze[i, j] == '║' || maze[i, j] == '╚' || maze[i, j] == '╔' || maze[i, j] == '╝' || maze[i, j] == '═' || maze[i, j] == '╗')
-                        paintBorder(maze[i, j]);
-                    else if (maze[i, j] == '1')
-                        paintRoad(maze[i, j]);
-                    else
-                        paintWall(maze[i, j]);
+                    // Guarda el caracter de esa posicion y evalua las opciones
+                    carac = maze[i, j];
+                    switch (carac)
+                    {
+                        // Si es un camino por donde va el auto lo imprime de otro color
+                        case '1':
+                            paintRoad(carac);
+                            break;
+                        // Si es un camino vacio 
+                        case '0':
+                            paintRoad(' ');
+                            break;
+                       // Si es un borde imprime de otro color
+                        case '█':
+                            paintWall(carac);
+                            break;
+                        // Si no es ninguna de las anteriore opciones, pues se trata de borde del laberinto
+                        default:
+                            paintBorder(carac);
+                            break;
+                    }                   
                 }
                 Console.WriteLine();
             }
         }
 
-        static void road(char[,] maze, int x, int y, int xEnd, int yEnd, List<Step> roadTemp, List<Road> roads)
+        static void findRoad(char[,] maze, int x, int y, int xEnd, int yEnd, List<Step> steps, List<Road> roads)
         {
-            
+            // Se verifica si la coordenada actual es igual al final del camino
             if (x == xEnd && y == yEnd)            
             {
-                Step r = new Step();
-                r.PositionX = x;
-                r.PositionY = y;
-                roadTemp.Add(r);
-                Road nuevo = new Road();
-                List<Step> nuevaLista = new List<Step>();
-                foreach (Step s in roadTemp)
-                {
-                    Step stp = s;
-                    nuevaLista.Add(stp);
-                }
-                nuevo.Steps = nuevaLista;
-                roads.Add(nuevo);
-                
-                roadTemp.Remove(r);
-                
-                Console.WriteLine("llego al fin");
+                // Si estamos en el final del camino, se crea un nuevo Camino, y se crea un nuevo paso
+                Road newRoad = new Road();
+                Step newStep = new Step{ PositionX = x, PositionY = y };
+                // Se agrega el nuevo paso a la lista de pasos pertenecientes a este camino.
+                steps.Add(newStep);
+                /* Se agrega la lista de pasos al nuevo camino encontrado, se castea de List<> a IEnumerable<> para que se creen nuevas referencias 
+                   en la lista de objetos y no exista problemas.*/
+                newRoad.Steps = (steps as IEnumerable<Step>).ToList();     
+                // Se agrega el nuevo camino a la lista de caminos que puede recorrer el auto para llegar a la meta.
+                roads.Add(newRoad);
+                // Se imprime el siguiente texto en consola.
+                printText(" FINALIZÓ EL CAMINO CON " + steps.Count() + " PASOS");                
+                // Se elimina el ultimo paso para seguir buscando más en otras direcciones.
+                steps.Remove(newStep);
+                // Se Imprime el laberinto con el nuevo camino encontrado.
                 printMaze(maze);
             }
             else
             {
                 for (int i = 0; i < 4; i++)
+                // Se crea un bucle de cuatro iteraciones para que se busque si se puede dar un paso en cualquiera de las 4 direcciones ( →, ↓, ←, ↑)
                 {
-                    Step r = new Step();
+                    int posX = 0, posY = 0; // Se declaran la posicion en X y en Y que seran reemplazadas por los valores de las coordenadas
                     switch (i)
                     {
                         case 0:
-                            if (isSafe(maze, x, y + 1))
-                            {
-                                maze[x, y + 1] = '1';
-                                r.PositionX = x;
-                                r.PositionY = y + 1;
-                                roadTemp.Add(r);
-                                road(maze, x, y + 1, xEnd, yEnd, roadTemp, roads);
-                                roadTemp.Remove(r);
-                                maze[x, y + 1] = '0';
-                            }
+                            // Se verifica si se puede dar un paso hacia la derecha(→) y si es posible se asignan las coordenadas en X, Y
+                            if (isSafe(maze, x, y + 1)) { posX = x; posY = y + 1; }
                             break;
                         case 1:
-                            if (isSafe(maze, x + 1, y))
-                            {
-                                maze[x + 1, y] = '1';
-                                r.PositionX = x + 1;
-                                r.PositionY = y;
-                                roadTemp.Add(r);
-                                road(maze, x + 1, y, xEnd, yEnd, roadTemp, roads);
-                                roadTemp.Remove(r);
-                                maze[x + 1, y] = '0';
-                            }
+                            // Se verifica si se puede dar un paso hacia abajo(↓) y si es posible se asignan las coordenadas en X, Y
+                            if (isSafe(maze, x + 1, y)) { posX = x + 1; posY = y; }
                             break;
-
                         case 2:
-                            if (isSafe(maze, x, y - 1))
-                            {                                
-                                maze[x, y - 1] = '1';
-                                r.PositionX = x;
-                                r.PositionY = y - 1;
-                                roadTemp.Add(r);
-                                road(maze, x, y - 1, xEnd, yEnd, roadTemp, roads);
-                                roadTemp.Remove(r);
-                                maze[x, y - 1] = '0';
-                            }
+                            // Se verifica si se puede dar un paso hacia la izquierda (←) y si es posible se asignan las coordenadas en X, Y
+                            if (isSafe(maze, x, y - 1)) { posX = x; posY = y - 1; }
                             break;
                         case 3:
-                            if (isSafe(maze, x - 1, y))
-                            {
-                                r.PositionX = x - 1;
-                                r.PositionY = y;
-                                roadTemp.Add(r);
-                                maze[x - 1, y] = '1';
-                                road(maze, x - 1, y, xEnd, yEnd, roadTemp, roads);
-                                roadTemp.Remove(r);
-                                maze[x - 1, y] = '0';
-                            }
+                            // Se verifica si se puede dar un paso hacia arriba (↑) y si es posible se asignan las coordenadas en X, Y
+                            if (isSafe(maze, x - 1, y)) { posX = x - 1; posY = y; }
                             break;
                     }
+                    // Se verifica que las variables estén con coordenadas en cualquiera de las 4 direcciones ( →, ↓, ←, ↑)
+                    if (posX != 0 && posY != 0)
+                    {
+                        //Se marca como visitado '1'.
+                        maze[posX, posY] = '1';
+                        // Se crea un nuevo paso y se añade a la lista de pasos
+                        Step s = new Step { PositionX = posX, PositionY = posY + 1 };
+                        steps.Add(s);
+                        // Se busca recursivamente ahora con la posicion del auto en alguna de las sgtes direcciones( →, ↓, ←, ↑).
+                        findRoad(maze, posX, posY, xEnd, yEnd, steps, roads);
+                        // Se marca como no visitado '0' para que pueda ser utilizado para otro camino y se elimina el paso de la lista
+                        maze[posX, posY] = '0';
+                        steps.Remove(s);
+                    }                                        
                 }
             }
         }
@@ -139,11 +147,15 @@ namespace Project_Maze
 
 
         static void Main(string[] args)
-        {
-            int[] numberSteps = new int[4] { 0, 0, 0, 0 };
-            int solutionNumberSteps = 0, c = 0;
-            List<Road> roads = new List<Road>();
-            List<Step> roadTemp = new List<Step>();
+        {            
+            int solutionOptimalSteps = 0, numberOfRoad = 0, numberRoadOptimal = 0;
+            List<Road> roads = new List<Road>(); // Se crea una lista de Caminos, donde c/u tendrá los pasos que se utilizaron hasta llegar a la meta.
+            List<Step> steps = new List<Step>(); // Se crea una lista de pasos que son necesarios para llegar a la meta.
+
+            //Se inicializa la matriz del laberinto, en donde '0' representará los pasos libres que se pueden elegir para que el auto pueda llegar a la meta.
+            //El caracter '█' representa una pared o un bloque donde el auto no puede transitar.
+            //Se tendrá en cuenta el caracter '1' para marcar que esa posicion es parte del camino de la solucion y el auto puede transitar.
+
             char[,] maze = new char[32, 32]
             {
                 {'╔','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╗'},
@@ -180,25 +192,42 @@ namespace Project_Maze
                 {'╚','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╝' }
             };
 
-
+            //La solución de los posibles caminos empieza inicializando la posicion (1,1) como visitada con el caracter '1' ya que el auto inicia en aquel lugar.
             maze[1, 1] = '1';
 
-            road(maze, 1, 1, 30, 30, roadTemp, roads);
+            //Se llama a la función findRoad (Buscar camino) la cual nos permitirá encontrar los caminos que el auto puede tomar para llegar a la meta.            
+            findRoad(maze, 1, 1, 30, 30, steps, roads);
 
+            //Ahora ya tenemos los caminos de las posibles soluciones que puede tomar el auto para llegar a la meta. Se eligirá el más optimo, el de menor pasos.                        
+            numberOfRoad = 1;
             foreach(Road r in roads)
-            {
-                if (c == 0)
-                    solutionNumberSteps = r.Steps.Count();
+            {       
+                if(numberOfRoad == 1)
+                {
+                    // Como tenemos varios caminos iniciaremos con que el primer camino es el más óptimo.                    
+                    solutionOptimalSteps = r.Steps.Count();
+                    // Se asigna el numero del camino
+                    numberRoadOptimal = numberOfRoad;                
+                }                    
                 else
                 {
-                    if (r.Steps.Count() < solutionNumberSteps)
-                        solutionNumberSteps = r.Steps.Count();
+                    //Se verifica si el camino actual tiene menos pasos que el camino optimo elegido hasta el momento.
+                    if (r.Steps.Count() < solutionOptimalSteps)
+                    {
+                        solutionOptimalSteps = r.Steps.Count();
+                        numberRoadOptimal = numberOfRoad;
+                    }                        
                 }
-                c++;
-                Console.WriteLine("Cantidad : " + r.Steps.Count());
+                // Se posiciona en una coordenada especifica de la consola para imprimir. Solo un detalle para que se pueda observar mejor.
+                Console.SetCursorPosition(37, numberOfRoad + 1);
+                Console.WriteLine("CAMINO " + numberOfRoad + " => " + r.Steps.Count() + " pasos.");
+                // Va sumando el numero de caminos por iteración.
+                numberOfRoad++;
             }
-            Console.WriteLine();
-            Console.WriteLine("El mas optimo es : " + solutionNumberSteps);
+            // Se posiciona en una coordenada especifica de la consola para imprimir. Solo un detalle para que se pueda observar mejor.
+            Console.SetCursorPosition(37, numberOfRoad + 1);            
+            Console.WriteLine("El camino más óptimo es el N° " + numberRoadOptimal + " con " + solutionOptimalSteps + " pasos.");            
+            Console.SetCursorPosition(37, numberOfRoad + 2);
             Console.ReadKey();
 
         }
