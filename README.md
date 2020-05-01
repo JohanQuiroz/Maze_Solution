@@ -1,6 +1,6 @@
 # Maze_Solution
 
-Descripcion
+Descripción
 =====================
 Este proyecto está enfocado en encontrar el camino óptimo por el cual un auto debe dirigirse para llegar a la meta en un laberinto. 
 
