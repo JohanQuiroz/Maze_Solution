@@ -131,8 +131,10 @@ namespace Project_Maze
                         steps.Add(s);
                         // Se busca recursivamente ahora con la posicion del auto en alguna de las sgtes direcciones( →, ↓, ←, ↑).
                         findRoad(maze, posX, posY, xEnd, yEnd, steps, roads);
-                        // Se marca como no visitado '0' para que pueda ser utilizado para otro camino y se elimina el paso de la lista
+                        /* CABE RESALTAR QUE SE TRATA DE UN ALGORITMO DE BACKTRACKING (vuelta atrás) ya que se va volviendo a un punto anterior para probar alternativas 
+                         en este caso se marca como no visitado '0' para que pueda ser utilizado para otro camino*/
                         maze[posX, posY] = '0';
+                        // Se elimina el paso de la lista
                         steps.Remove(s);
                     }                                        
                 }
@@ -187,9 +189,9 @@ namespace Project_Maze
                 {'║','█','█','█','█','█','█','█','█','█','█','█','█','0','0','0','0','0','█','█','█','█','█','0','0','0','0','0','0','0','0','║' },
                 {'╚','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','═','╝' }
             };
-            
+
             //Se llama a la función findRoad (Buscar camino) la cual nos permitirá encontrar los caminos que el auto puede tomar para llegar a la meta.  
-            //Se pasa la posicion (1,1) la cual es el inicio del auto y la (30,30) que es la meta.
+            //Se pasa la posicion (1,1) la cual es el inicio del auto y la (30,30) que es la meta.            
             findRoad(maze, 1, 1, 30, 30, steps, roads);
 
             //Ahora ya tenemos los caminos de las posibles soluciones que puede tomar el auto para llegar a la meta. Se eligirá el más optimo, el de menor pasos.                        
